@@ -113,13 +113,13 @@ define_categories! {
     "lint/nursery/noConsole": "https://biomejs.dev/linter/rules/no-console",
     "lint/nursery/noDoneCallback": "https://biomejs.dev/linter/rules/no-done-callback",
     "lint/nursery/noDuplicateElseIf": "https://biomejs.dev/linter/rules/no-duplicate-else-if",
+    "lint/nursery/noDuplicateFontNames": "https://biomejs.dev/linter/rules/no-font-family-duplicate-names",
     "lint/nursery/noDuplicateJsonKeys": "https://biomejs.dev/linter/rules/no-duplicate-json-keys",
     "lint/nursery/noDuplicateTestHooks": "https://biomejs.dev/linter/rules/no-duplicate-test-hooks",
     "lint/nursery/noEvolvingAny": "https://biomejs.dev/linter/rules/no-evolving-any",
     "lint/nursery/noExcessiveNestedTestSuites": "https://biomejs.dev/linter/rules/no-excessive-nested-test-suites",
     "lint/nursery/noExportsInTest": "https://biomejs.dev/linter/rules/no-exports-in-test",
     "lint/nursery/noFocusedTests": "https://biomejs.dev/linter/rules/no-focused-tests",
-    "lint/nursery/noDuplicateFontNames": "https://biomejs.dev/linter/rules/no-font-family-duplicate-names",
     "lint/nursery/noMisplacedAssertion": "https://biomejs.dev/linter/rules/no-misplaced-assertion",
     "lint/nursery/noNamespaceImport": "https://biomejs.dev/linter/rules/no-namespace-import",
     "lint/nursery/noNodejsModules": "https://biomejs.dev/linter/rules/no-nodejs-modules",
@@ -231,6 +231,7 @@ define_categories! {
     "lint/suspicious/useIsArray": "https://biomejs.dev/linter/rules/use-is-array",
     "lint/suspicious/useNamespaceKeyword": "https://biomejs.dev/linter/rules/use-namespace-keyword",
     "lint/suspicious/useValidTypeof": "https://biomejs.dev/linter/rules/use-valid-typeof",
+    "assists/nursery/useSortedKeys": "https://biomejs.dev/linter/rules/use-sorted-keys",
     ;
     // General categories
     "files/missingHandler",

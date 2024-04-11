@@ -8,11 +8,11 @@ use biome_console::fmt::Display;
 use biome_console::{markup, MarkupBuf};
 use biome_diagnostics::advice::CodeSuggestionAdvice;
 use biome_diagnostics::location::AsSpan;
-use biome_diagnostics::Applicability;
 use biome_diagnostics::{
     Advices, Category, Diagnostic, DiagnosticTags, Location, LogCategory, MessageAndDescription,
     Visit,
 };
+use biome_diagnostics::{Applicability, DiagnosticExt};
 use biome_rowan::{AstNode, BatchMutation, BatchMutationExt, Language, TextRange};
 use std::cmp::Ordering;
 use std::fmt::Debug;
@@ -347,7 +347,7 @@ pub trait RuleGroup {
 /// This macro is used by the codegen script to declare an analyzer rule group,
 /// and implement the [RuleGroup] trait for it
 #[macro_export]
-macro_rules! declare_group {
+macro_rules! declare_lint_group {
     ( $vis:vis $id:ident { name: $name:tt, rules: [ $( $( $rule:ident )::* , )* ] } ) => {
         $vis enum $id {}
 
@@ -373,6 +373,43 @@ macro_rules! declare_group {
         #[allow(unused_macros)]
         macro_rules! group_category {
             ( $rule_name:tt ) => { $crate::category_concat!( "lint", $name, $rule_name ) };
+        }
+
+        // Re-export the macro for child modules, so `declare_rule!` can access
+        // the category of its parent group by using the `super` module
+        pub(self) use group_category;
+    };
+}
+
+/// This macro is used by the codegen script to declare an analyzer rule group,
+/// and implement the [RuleGroup] trait for it
+#[macro_export]
+macro_rules! declare_assists_group {
+    ( $vis:vis $id:ident { name: $name:tt, rules: [ $( $( $rule:ident )::* , )* ] } ) => {
+        $vis enum $id {}
+
+        impl $crate::RuleGroup for $id {
+            type Language = <( $( $( $rule )::* , )* ) as $crate::GroupLanguage>::Language;
+            type Category = super::Category;
+
+            const NAME: &'static str = $name;
+
+            fn record_rules<V: $crate::RegistryVisitor<Self::Language> + ?Sized>(registry: &mut V) {
+                $( registry.record_rule::<$( $rule )::*>(); )*
+            }
+        }
+
+        pub(self) use $id as Group;
+
+        // Declare a `group_category!` macro in the context of this module (and
+        // all its children). This macro takes the name of a rule as a string
+        // literal token and expands to the category of the lint rule with this
+        // name within this group.
+        // This is implemented by calling the `category_concat!` macro with the
+        // "lint" prefix, the name of this group, and the rule name argument
+        #[allow(unused_macros)]
+        macro_rules! group_category {
+            ( $rule_name:tt ) => { $crate::category_concat!( "assists", $name, $rule_name ) };
         }
 
         // Re-export the macro for child modules, so `declare_rule!` can access

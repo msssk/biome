@@ -33,6 +33,26 @@ impl FromStr for RuleKind {
     }
 }
 
+#[derive(Debug, Clone, Bpaf)]
+pub enum Category {
+    /// Lint rules
+    Lint,
+    /// Assist rules
+    Assist,
+}
+
+impl FromStr for Category {
+    type Err = &'static str;
+
+    fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
+        match s {
+            "lint" => Ok(Self::Lint),
+            "assist" => Ok(Self::Assist),
+            _ => Err("Not supported"),
+        }
+    }
+}
+
 fn generate_rule_template(
     kind: &RuleKind,
     rule_name_upper_camel: &str,
@@ -192,15 +212,89 @@ impl Rule for {rule_name_upper_camel} {{
             )
         }
         RuleKind::Json => {
-            unimplemented!("JSON variant not implemented yet.")
+            format!(
+                r#"use biome_analyze::{{context::RuleContext, declare_rule, Ast, Rule, RuleDiagnostic}};
+use biome_console::markup;
+use biome_json_syntax::JsonRoot;
+use biome_rowan::AstNode;
+
+declare_rule! {{
+    /// Succinct description of the rule.
+    ///
+    /// Put context and details about the rule.
+    /// As a starting point, you can take the description of the corresponding _ESLint_ rule (if any).
+    ///
+    /// Try to stay consistent with the descriptions of implemented rules.
+    ///
+    /// Add a link to the corresponding stylelint rule (if any):
+    ///
+    /// ## Examples
+    ///
+    /// ### Invalid
+    ///
+    /// ```css,expect_diagnostic
+    /// p {{}}
+    /// ```
+    ///
+    /// ### Valid
+    ///
+    /// ```css
+    /// p {{
+    ///   color: red;
+    /// }}
+    /// ```
+    ///
+    pub {rule_name_upper_camel} {{
+        version: "next",
+        name: "{rule_name_lower_camel}",
+        recommended: false,
+    }}
+}}
+
+impl Rule for {rule_name_upper_camel} {{
+    type Query = Ast<JsonRoot>;
+    type State = ();
+    type Signals = Option<Self::State>;
+    type Options = ();
+
+    fn run(ctx: &RuleContext<Self>) -> Option<Self::State> {{
+        let node = ctx.query();
+        None
+    }}
+
+    fn diagnostic(_: &RuleContext<Self>, node: &Self::State) -> Option<RuleDiagnostic> {{
+        //
+        // Read our guidelines to write great diagnostics:
+        // https://docs.rs/biome_analyze/latest/biome_analyze/#what-a-rule-should-say-to-the-user
+        //
+        let span = node.range();
+        Some(
+            RuleDiagnostic::new(
+                rule_category!(),
+                span,
+                markup! {{
+                    "Unexpected empty block is not allowed"
+                }},
+            )
+            .note(markup! {{
+                    "This note will give you more information."
+            }}),
+        )
+    }}
+}}
+"#
+            )
         }
     }
 }
 
-pub fn generate_new_lintrule(kind: RuleKind, rule_name: &str) {
+pub fn generate_new_analyzer_rule(kind: RuleKind, category: Category, rule_name: &str) {
     let rule_kind = kind.as_str();
     let crate_folder = project_root().join(format!("crates/biome_{rule_kind}_analyze"));
-    let rule_folder = crate_folder.join("src/lint/nursery");
+    let rule_folder = match &category {
+        Category::Lint => crate_folder.join("src/lint/nursery"),
+        Category::Assist => crate_folder.join("src/assists/nursery"),
+    };
     let test_folder = crate_folder.join("tests/specs/nursery");
     let rule_name_upper_camel = rule_name.to_camel();
     let rule_name_snake = rule_name.to_snake();

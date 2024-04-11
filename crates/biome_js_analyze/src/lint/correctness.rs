@@ -1,6 +1,6 @@
 //! Generated file, do not edit by hand, see `xtask/codegen`
 
-use biome_analyze::declare_group;
+use biome_analyze::declare_lint_group;
 
 pub mod no_children_prop;
 pub mod no_const_assign;
@@ -39,7 +39,7 @@ pub mod use_is_nan;
 pub mod use_valid_for_direction;
 pub mod use_yield;
 
-declare_group! {
+declare_lint_group! {
     pub Correctness {
         name : "correctness" ,
         rules : [
