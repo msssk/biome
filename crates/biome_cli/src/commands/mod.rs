@@ -174,6 +174,16 @@ pub enum BiomeCommand {
         paths: Vec<OsString>,
     },
     /// Run the formatter on a set of files.
+    ///
+    /// ## Examples
+    ///
+    /// ```shell
+    /// biome format --write src
+    /// ```
+    ///
+    /// ```shell
+    /// biome format --write --staged packages/client packages/server
+    /// ```
     #[bpaf(command)]
     Format {
         #[bpaf(external(partial_formatter_configuration), optional, hide_usage)]
